@@ -1,6 +1,8 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -14,13 +16,19 @@ public class Tile
 	private Rectangle rectangle;
 	private Optional<Tile> teleport;
 	private int weight;
-	private static final int width = 10;
+	private Texture text;
+	public static final Texture texture = new Texture(Gdx.files.internal("tile.png"));
+	private static final int width = 20;
 	public Tile(int x,int y)
 	{
 		Random r = new Random();
 		teleport = Optional.empty();
-		weight = r.nextInt(10);
+		weight = r.nextInt(9)+1;
 		rectangle = new Rectangle(x*width,y*width,width,width);
+		if(!teleport.isPresent())
+			text = new Texture(Gdx.files.internal(weight+".png"));
+		else
+			text = new Texture(Gdx.files.internal(weight+"t.png"));
 	}
 	public Tile(int w,Tile t,int x,int y)
 	{
@@ -36,11 +44,11 @@ public class Tile
 	{
 		return weight;
 	}
-	public void draw(ShapeRenderer sr)
+	public void draw(SpriteBatch batch)
 	{
-		sr.begin(ShapeRenderer.ShapeType.Filled);
-		sr.setColor(Color.LIGHT_GRAY);
-		sr.rect(rectangle.x,rectangle.y,rectangle.width,rectangle.height);
-		sr.end();
+		batch.begin();
+		batch.draw(texture,rectangle.x,rectangle.y,rectangle.width,rectangle.height);
+		batch.draw(text,rectangle.x,rectangle.y,rectangle.width,rectangle.height);
+		batch.end();
 	}
 }

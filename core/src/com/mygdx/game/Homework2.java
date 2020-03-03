@@ -1,42 +1,42 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.Array;
-
+/*
+NOTES
+TRY A* but with multiple outputs where 1 is direct to the goal and the others are routed to each teleport unless it is already longer to the teleport than goal
+ */
 public class Homework2 extends ApplicationAdapter
 {
 	OrthographicCamera camera;
-	CameraInputController cameraController;
-	ShapeRenderer sr;
+	KeyProcessor inputProcessor;
 	PathDrawer path;
 	Array<Array<Tile>> tiles;
+	SpriteBatch batch;
 	int teleporterNum;
 
 	@Override
 	public void create()
 	{
-		//batch = new SpriteBatch();
-		sr = new ShapeRenderer();
+		batch = new SpriteBatch();
 		camera = new OrthographicCamera();
-		camera.setToOrtho(true,1920,1080);
-		cameraController = new MyCameraController(camera);
-		Gdx.input.setInputProcessor(cameraController);
+		camera.setToOrtho(false,1920,1080);
+		inputProcessor = new KeyProcessor(camera);
+		Gdx.input.setInputProcessor(inputProcessor);
 		//Graphics.DisplayMode displayMode = Gdx.graphics.getDisplayMode();
 		//Gdx.graphics.setFullscreenMode(displayMode);
 		path = new PathDrawer(3);
 		teleporterNum=0;
 
-		int xTiles = 10;
-		int yTiles = 10;
+		int xTiles = 50;
+		int yTiles = 50;
 		tiles = new Array<>(xTiles);
 		for(int i=0;i<xTiles;i++)
 		{
@@ -52,25 +52,25 @@ public class Homework2 extends ApplicationAdapter
 	@Override
 	public void render()
 	{
-
-
-		Gdx.gl.glClearColor(0, 0, 1, 1);
+		Gdx.gl.glClearColor(0, 1, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-
-		sr.setProjectionMatrix(camera.projection);
+		
+		batch.setProjectionMatrix(camera.combined);
 		for(Array<Tile> a:tiles)
 		{
 			for(Tile t:a)
 			{
-				t.draw(sr);
+				t.draw(batch);
 			}
 		}
+		inputProcessor.moveCamera();
+		camera.update();
 	}
 
 	@Override
 	public void dispose()
 	{
-		sr.dispose();
+		batch.dispose();
+		Tile.texture.dispose();
 	}
 }
