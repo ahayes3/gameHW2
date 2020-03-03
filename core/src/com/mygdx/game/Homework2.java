@@ -8,6 +8,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 /*
 NOTES
@@ -30,8 +32,6 @@ public class Homework2 extends ApplicationAdapter
 		camera.setToOrtho(false,1920,1080);
 		inputProcessor = new KeyProcessor(camera);
 		Gdx.input.setInputProcessor(inputProcessor);
-		//Graphics.DisplayMode displayMode = Gdx.graphics.getDisplayMode();
-		//Gdx.graphics.setFullscreenMode(displayMode);
 		path = new PathDrawer(3);
 		teleporterNum=0;
 
@@ -54,7 +54,17 @@ public class Homework2 extends ApplicationAdapter
 	{
 		Gdx.gl.glClearColor(0, 1, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
+		if(Gdx.input.isTouched())
+		{
+			Vector3 unprojected = camera.unproject(new Vector3(Gdx.input.getX(),Gdx.input.getY(),0));
+			int x = (int) (unprojected.x/20);
+			int y = (int) (unprojected.y/20);
+
+			//TODO change tile to selected
+
+		}
+
 		batch.setProjectionMatrix(camera.combined);
 		for(Array<Tile> a:tiles)
 		{

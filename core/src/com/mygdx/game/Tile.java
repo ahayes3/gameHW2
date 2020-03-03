@@ -15,10 +15,11 @@ public class Tile
 {
 	private Rectangle rectangle;
 	private Optional<Tile> teleport;
-	private int weight;
+	private int weight; // -1 is impassable
 	private Texture text;
 	public static final Texture texture = new Texture(Gdx.files.internal("tile.png"));
 	private static final int width = 20;
+	private boolean selected;
 	public Tile(int x,int y)
 	{
 		Random r = new Random();
@@ -27,6 +28,8 @@ public class Tile
 		rectangle = new Rectangle(x*width,y*width,width,width);
 		if(!teleport.isPresent())
 			text = new Texture(Gdx.files.internal(weight+".png"));
+		else if(weight == -1)
+			text = new Texture(Gdx.files.internal("f.png"));
 		else
 			text = new Texture(Gdx.files.internal(weight+"t.png"));
 	}
@@ -43,6 +46,10 @@ public class Tile
 	public int getWeight()
 	{
 		return weight;
+	}
+	public void select()
+	{
+		selected = !selected;
 	}
 	public void draw(SpriteBatch batch)
 	{

@@ -4,14 +4,18 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.Vector3;
 
 public class KeyProcessor implements InputProcessor
 {
 	public boolean aPressed,sPressed,wPressed,dPressed;
 	private OrthographicCamera camera;
+	private Vector3 coordinates;
 	public KeyProcessor(OrthographicCamera camera)
 	{
 		this.camera = camera;
+		coordinates = new Vector3();
+		coordinates.z = 0;
 	}
 	public void moveCamera()
 	{
@@ -71,6 +75,10 @@ public class KeyProcessor implements InputProcessor
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button)
 	{
+		coordinates.x = screenX;
+		coordinates.y = screenY;
+		Vector3 unprojected = camera.unproject(coordinates);
+		System.out.println(unprojected);
 		return false;
 	}
 	
@@ -87,10 +95,7 @@ public class KeyProcessor implements InputProcessor
 	}
 	
 	@Override
-	public boolean mouseMoved(int screenX, int screenY)
-	{
-		return false;
-	}
+	public boolean mouseMoved(int screenX, int screenY) {return false;}
 	
 	@Override
 	public boolean scrolled(int amount)
