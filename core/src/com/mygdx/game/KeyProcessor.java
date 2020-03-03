@@ -75,10 +75,6 @@ public class KeyProcessor implements InputProcessor
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button)
 	{
-		coordinates.x = screenX;
-		coordinates.y = screenY;
-		Vector3 unprojected = camera.unproject(coordinates);
-		System.out.println(unprojected);
 		return false;
 	}
 	
@@ -100,7 +96,7 @@ public class KeyProcessor implements InputProcessor
 	@Override
 	public boolean scrolled(int amount)
 	{
-		camera.zoom += amount*2*Gdx.graphics.getDeltaTime();
+		camera.zoom += amount*3*Gdx.graphics.getDeltaTime();
 		if(camera.zoom <0.05)
 			camera.zoom = 0.05f;
 		return false;
