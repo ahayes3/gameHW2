@@ -15,11 +15,19 @@ import com.badlogic.gdx.utils.Array;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Iterator;
 import java.util.Scanner;
 
 /*
 NOTES
 TRY A* but with multiple outputs where 1 is direct to the goal and the others are routed to each teleport unless it is already longer to the teleport than goal
+ */
+/*
+Instructions:
+wasd to pan camera
+scroll to zoom
+click start and end tiles to calculate path
+x to reset
  */
 public class Homework2 extends ApplicationAdapter
 {
@@ -27,9 +35,10 @@ public class Homework2 extends ApplicationAdapter
 	KeyProcessor inputProcessor;
 	PathDrawer path;
 	Array<Array<Tile>> tiles;
+	Pathfinder pathFinder;
 	SpriteBatch batch;
 	int teleporterNum;
-	Tile start,end;
+	Coord start,end;
 	
 	@Override
 	public void create()
@@ -38,7 +47,7 @@ public class Homework2 extends ApplicationAdapter
 		end = null;
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera();
-		camera.setToOrtho(false,1920,1080);
+		camera.setToOrtho(true,1920,1080);
 		inputProcessor = new KeyProcessor(camera);
 		Gdx.input.setInputProcessor(inputProcessor);
 		path = new PathDrawer(3);
@@ -76,7 +85,32 @@ public class Homework2 extends ApplicationAdapter
 				tiles.get(i).add(new Tile(i,j,inputs.get(i).get(j)));
 			}
 		}
-		camera.translate(0,-(camera.viewportHeight-Tile.width));
+		pathFinder = new Pathfinder(tiles);
+		
+		Array<Tile> teleports = new Array<>();
+		for(Array<Tile> a:tiles)
+		{
+			for(Tile t:a)
+			{
+				if(t.getTeleportNum() != -1)
+				{
+					boolean found = false;
+					for(Iterator<Tile> iter =teleports.iterator();iter.hasNext();)
+					{
+						Tile i = iter.next();
+						if(i.getTeleportNum() == t.getTeleportNum())
+						{
+							i.connect(t);
+							t.connect(i);
+							iter.remove();
+							found = true;
+						}
+					}
+					if(!found)
+						teleports.add(t);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -84,39 +118,85 @@ public class Homework2 extends ApplicationAdapter
 	{
 		Gdx.gl.glClearColor(0, 1, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-		if(Gdx.input.isTouched())
+		if(Gdx.input.isKeyJustPressed(Input.Keys.X))
+		{
+			for(Array<Tile> a:tiles)
+			{
+				for(Tile t:a)
+				{
+					t.deselect();
+				}
+			}
+			start = null;
+			end = null;
+			path = null;
+		}
+		
+		if(Gdx.input.justTouched())
 		{
 			Vector3 unprojected = camera.unproject(new Vector3(Gdx.input.getX(),Gdx.input.getY(),0));
-			int x = (int) (unprojected.x/Tile.width);
-			int y = (int) (-unprojected.y/Tile.width);
+			int x = (int) (unprojected.y/Tile.width);
+			int y = (int) (unprojected.x/Tile.width);
 			
-			if(tiles.size<y && tiles.get(y).size < x)
+			System.out.println("X: "+x+" Y: "+y);
+			
+			if(tiles.size>x && tiles.get(x).size > y)
 			{
-				Tile t = tiles.get(y).get(x);
+				Tile t = tiles.get(x).get(y);
+				System.out.println("Weight: "+t.getWeight());
 				if(t.isSelected())
 				{
 					t.deselect();
-					if(start == t)
+					if(start != null && start.equals(t.getCoords()))
 						start = null;
-					if(end == t)
+					if(end != null && end.equals(t.getCoords()))
 						end =null;
 				}
 				else if(start == null)
-					{start = t;t.select();}
+					{
+						for(int i = 0;i<tiles.size;i++)
+						{
+							if(tiles.get(i).indexOf(t,true)!=-1)
+								start = new Coord(i,tiles.get(i).indexOf(t,true));
+						}
+						t.select();
+					}
 				else if(end == null)
-					{end = t;t.select();}
+					{
+						for(int i = 0;i<tiles.size;i++)
+						{
+							if(tiles.get(i).indexOf(t,true)!=-1)
+								end = new Coord(i,tiles.get(i).indexOf(t,true));
+						}
+						t.select();
+					}
 			}
 		}
 		
-		//TODO path find
 		if(start!= null && end !=null)
 		{
-		
+			Pair<Array<Coord>,Integer> out = pathFinder.find(start,end);
+			//TODO make it work with teleporters
+			
+			
+//			for(Coord c:flipped)
+//			{
+//				path.add(new Coord(c.y,c.x));
+//			}
+			
+			System.out.println(path);
+			tiles.get(start.x).get(start.y).deselect();
+			tiles.get(end.x).get(end.y).deselect();
+			start = null;
+			end = null;
 		}
 
 		batch.setProjectionMatrix(camera.combined);
 		
+		if(path !=null)
+		{
+			//TODO DRAW PATH
+		}
 		for(Array<Tile> a:tiles)
 		{
 			for(Tile t:a)

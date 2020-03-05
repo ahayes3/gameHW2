@@ -20,4 +20,9 @@ public class CoordWrapper implements Comparable<CoordWrapper>
 		return Integer.compare(priority,location.priority);
 		//return Double.compare(Pathfinder.heuristic(location.coordinates, goal), Pathfinder.heuristic(this.coordinates, goal));
 	}
+	@Override
+	public String toString()
+	{
+		return coordinates.toString();
+	}
 }

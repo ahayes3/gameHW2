@@ -17,11 +17,11 @@ public class Pathfinder
 	{
 		return Math.abs(a.x - b.x) +Math.abs(a.y - b.y);
 	}
-	public Array<Coord> find(Coord start,Coord end)
+	public Pair<Array<Coord>,Integer> find(Coord start,Coord end)
 	{
 		return find(start,end,new HashMap<Coord,Coord>(),new HashMap<Coord,Integer>());
 	}
-	private Array<Coord> find(Coord start, Coord goal, Map<Coord,Coord> cameFrom,Map<Coord,Integer> costSoFar)
+	private Pair<Array<Coord>,Integer> find(Coord start, Coord goal, Map<Coord,Coord> cameFrom,Map<Coord,Integer> costSoFar)
 	{
 		PriorityQueue<CoordWrapper> frontier = new PriorityQueue<>();
 		frontier.add(new CoordWrapper(start,0));
@@ -32,7 +32,7 @@ public class Pathfinder
 		while(!frontier.isEmpty())
 		{
 			Coord current = frontier.poll().coordinates;
-			if(current == goal)
+			if(current.equals(goal))
 				break;
 			
 			for(Coord next : getNeighbors(current))
@@ -59,7 +59,7 @@ public class Pathfinder
 			out.add(c);
 		}
 		out.reverse();
-		return out;
+		return new Pair<>(out,costSoFar.get(goal));
 	}
 	public Array<Coord> getNeighbors(Coord coord)
 	{
@@ -67,18 +67,10 @@ public class Pathfinder
 		if(coord.x > 0)
 		{
 			neighbors.add(new Coord(coord.x-1,coord.y));
-			if(coord.y >0)
-				neighbors.add(new Coord(coord.x-1,coord.y-1));
-			if(coord.y < tiles.get(coord.x).size - 1)
-				neighbors.add(new Coord(coord.x-1,coord.y+1));
 		}
 		if(coord.x < tiles.size -1)
 		{
 			neighbors.add(new Coord(coord.x+1,coord.y));
-			if(coord.y > 0)
-				neighbors.add(new Coord(coord.x+1,coord.y-1));
-			if(coord.y < tiles.get(coord.x).size -1)
-				neighbors.add(new Coord(coord.x+1,coord.y+1));
 		}
 		if(coord.y < tiles.get(coord.x).size -1)
 			neighbors.add(new Coord(coord.x,coord.y+1));

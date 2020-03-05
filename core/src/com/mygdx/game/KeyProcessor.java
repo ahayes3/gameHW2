@@ -25,7 +25,7 @@ public class KeyProcessor implements InputProcessor
 		}
 		if(sPressed)
 		{
-			camera.translate(0,-500* Gdx.graphics.getDeltaTime());
+			camera.translate(0,500* Gdx.graphics.getDeltaTime());
 		}
 		if(dPressed)
 		{
@@ -33,7 +33,7 @@ public class KeyProcessor implements InputProcessor
 		}
 		if(wPressed)
 		{
-			camera.translate(0,500* Gdx.graphics.getDeltaTime());
+			camera.translate(0,-500* Gdx.graphics.getDeltaTime());
 		}
 	}
 	@Override
