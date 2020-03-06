@@ -1,51 +1,112 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.utils.Array;
-
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.PriorityQueue;
 
 public class Pathfinder
 {
-	private Array<Array<Tile>> tiles;
-	public Pathfinder(Array<Array<Tile>> t)
+	private Grid grid;
+	private boolean dijkstra;
+	
+	public Pathfinder(Grid g)
 	{
-		tiles =t;
+		grid =g;
 	}
-	public static Integer heuristic(Coord a, Coord b)
+	public Pathfinder(Grid g,boolean dijkstra)
 	{
-		return Math.abs(a.x - b.x) +Math.abs(a.y - b.y);
+		grid = g;
+		this.dijkstra =dijkstra;
 	}
-	public Pair<Array<Coord>,Integer> find(Coord start,Coord end)
+	public int heuristic(Node a,Node b,Node tele1,Node tele2) //TODO find better heuristic
 	{
-		return find(start,end,new HashMap<Coord,Coord>(),new HashMap<Coord,Integer>());
+		return heuristic(a.getCoord(),b.getCoord(),tele1.getCoord(),tele2.getCoord());
 	}
-	private Pair<Array<Coord>,Integer> find(Coord start, Coord goal, Map<Coord,Coord> cameFrom,Map<Coord,Integer> costSoFar)
+	public int heuristic(Coord a,Coord b,Coord t1,Coord t2)
 	{
-		PriorityQueue<CoordWrapper> frontier = new PriorityQueue<>();
-		frontier.add(new CoordWrapper(start,0));
+		if(dijkstra)
+			return 0;
+		else
+		{
+			return Math.min(Math.min(Math.abs(a.x-b.x)+Math.abs(a.y-b.y),Math.abs(a.x-t1.x)+Math.abs(a.y-t1.y)),Math.abs(t2.x-b.x)+Math.abs(t2.y-b.y));
+			//return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+		}
+	}
+	public int heuristic(Node a,Node b)
+	{
+		return heuristic(a.getCoord(),b.getCoord());
+	}
+	public int heuristic(Coord a,Coord b)
+	{
+		return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+	}
+	public int manhattanDistance(Node a,Node b)
+	{
+		return manhattanDistance(a.getCoord(),b.getCoord());
+	}
+	public int manhattanDistance(Coord a,Coord b)
+	{
+		return Math.abs(a.x - b.x) + Math.abs(a.y-b.y);
+	}
+	public ArrayList<Coord> find(Node start,Node goal)
+	{
+		return find(start,goal,new HashMap<>(),new HashMap<>());
+	}
+	public ArrayList<Coord> find(Node start, Node goal, HashMap<Node,Node> cameFrom, HashMap<Node,Integer> costSoFar)
+	{
+		boolean hasTeles = grid.getTeleporters().isEmpty();
+		Node startTele = null;
+		Node endTele = null;
+		if(hasTeles)
+		{
+			
+			int cls = -1;
+			//TODO find path to nearest teleporter to end and to current position and see if it is worth it at all
+			int closest = -1;
+			for (Node n : grid.getTeleporters())
+			{
+				int cost = manhattanDistance(start, n);
+				int cost2 = manhattanDistance(n, goal);
+				if (start == null || cost < cls)
+				{
+					startTele = n;
+					cls = cost;
+				}
+				if (endTele == null || cost2 < closest)
+				{
+					endTele = n;
+					closest = cost2;
+				}
+			}
+		}
 		
+		
+		PriorityQueue<NodeWrapper> frontier = new PriorityQueue<>();
+		frontier.add(new NodeWrapper(start,0));
 		cameFrom.put(start,start);
 		costSoFar.put(start,0);
 		
 		while(!frontier.isEmpty())
 		{
-			Coord current = frontier.poll().coordinates;
+			Node current = frontier.poll().get();
 			if(current.equals(goal))
 				break;
-			
-			for(Coord next : getNeighbors(current))
+			for(Node next: current.getNeighbors())
 			{
-				Integer newCost = costSoFar.get(current) + tiles.get(next.x).get(next.y).getWeight();
+				Integer newCost = costSoFar.get(current) + grid.getNode(next.getCoord()).getWeight();
 				if(!costSoFar.containsKey(next) || newCost < costSoFar.get(next))
 				{
 					if(!costSoFar.containsKey(next))
 						costSoFar.put(next,newCost);
 					else
 						costSoFar.replace(next,newCost);
-					Integer priority = newCost + heuristic(next,goal);
-					frontier.add(new CoordWrapper(next,priority));
+					
+					Integer priority;
+					if(hasTeles)
+						priority = newCost + heuristic(next,goal,startTele,endTele);
+					else
+						priority = newCost + heuristic(next,goal);
+					frontier.add(new NodeWrapper(next,priority));
 					if(cameFrom.containsKey(next))
 						cameFrom.replace(next,current);
 					else
@@ -53,29 +114,48 @@ public class Pathfinder
 				}
 			}
 		}
-		Array<Coord> out =new Array<>();
-		for(Coord c = goal;c!=start;c = cameFrom.get(c))
+		ArrayList<Node> reversed = new ArrayList<>();
+		for(Node n = goal;!n.equals(start);n = cameFrom.get(n))
 		{
-			out.add(c);
+			reversed.add(n);
 		}
-		out.reverse();
-		return new Pair<>(out,costSoFar.get(goal));
+		ArrayList<Coord> out = new ArrayList<>();
+		reversed.forEach(p -> out.add(0,p.getCoord()));
+		return out;
 	}
-	public Array<Coord> getNeighbors(Coord coord)
+	public int findCost(Node start,Node goal)
 	{
-		Array<Coord> neighbors = new Array<>();
-		if(coord.x > 0)
+		HashMap<Node,Node> cameFrom = new HashMap<>();
+		HashMap<Node,Integer> costSoFar = new HashMap<>();
+		PriorityQueue<NodeWrapper> frontier = new PriorityQueue<>();
+		frontier.add(new NodeWrapper(start,0));
+		cameFrom.put(start,start);
+		costSoFar.put(start,0);
+		
+		while(!frontier.isEmpty())
 		{
-			neighbors.add(new Coord(coord.x-1,coord.y));
+			Node current = frontier.poll().get();
+			if(current.equals(goal))
+				break;
+			for(Node next: current.getNeighbors())
+			{
+				Integer newCost = costSoFar.get(current) + grid.getNode(next.getCoord()).getWeight();
+				if(!costSoFar.containsKey(next) || newCost < costSoFar.get(next))
+				{
+					if(!costSoFar.containsKey(next))
+						costSoFar.put(next,newCost);
+					else
+						costSoFar.replace(next,newCost);
+					Integer priority = newCost + heuristic(next,goal);
+					frontier.add(new NodeWrapper(next,priority));
+					if(cameFrom.containsKey(next))
+						cameFrom.replace(next,current);
+					else
+						cameFrom.put(next,current);
+				}
+			}
 		}
-		if(coord.x < tiles.size -1)
-		{
-			neighbors.add(new Coord(coord.x+1,coord.y));
-		}
-		if(coord.y < tiles.get(coord.x).size -1)
-			neighbors.add(new Coord(coord.x,coord.y+1));
-		if(coord.y > 0)
-			neighbors.add(new Coord(coord.x,coord.y-1));
-		return neighbors;
+		return costSoFar.get(goal);
+		
 	}
 }

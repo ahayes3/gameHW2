@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -33,12 +34,12 @@ public class Homework2 extends ApplicationAdapter
 {
 	OrthographicCamera camera;
 	KeyProcessor inputProcessor;
-	PathDrawer path;
-	Array<Array<Tile>> tiles;
-	Pathfinder pathFinder;
+	Grid grid;
 	SpriteBatch batch;
-	int teleporterNum;
-	Coord start,end;
+	Node start,end;
+	Pathfinder pathfinder;
+	Array<Node> path = new Array<>();
+	NodeDrawer drawer;
 	
 	@Override
 	public void create()
@@ -50,67 +51,33 @@ public class Homework2 extends ApplicationAdapter
 		camera.setToOrtho(true,1920,1080);
 		inputProcessor = new KeyProcessor(camera);
 		Gdx.input.setInputProcessor(inputProcessor);
-		path = new PathDrawer(3);
-		teleporterNum=0;
-		Scanner s = null;
 		
-		System.out.println(Gdx.files.internal("input.txt").exists());
-		s = new Scanner(Gdx.files.internal("input.txt").reader());
+		Scanner scanner = null;
+		
+		scanner = new Scanner(Gdx.files.internal("input.txt").reader());
 		
 		Array<String> lines = new Array<>();
-		while(s.hasNext())
+		while(scanner.hasNext())
 		{
-			lines.add(s.nextLine());
+			lines.add(scanner.nextLine());
 		}
-		int strAmt =0;
-		for(int i=0;i<lines.get(0).length();i++)
-		{
-			if(lines.get(0).charAt(i) == ' ')
-				strAmt++;
-		}
-		Array<Array<String>> inputs = new Array<>();
+		Node next = null;
 		for(int i=0;i<lines.size;i++)
 		{
-			inputs.add(new Array<String>(lines.get(i).split(" ")));
-		}
-		
-		int xTiles = inputs.size;
-		int yTiles = inputs.get(0).size;
-		tiles = new Array<>(xTiles);
-		for(int i=0;i<xTiles;i++)
-		{
-			tiles.add(new Array<Tile>());
-			for(int j=0;j<yTiles;j++)
+			System.out.println("LINE: "+i);
+			String[] strs = lines.get(i).split(" ");
+			for(int j=0;j<strs.length;j++)
 			{
-				tiles.get(i).add(new Tile(i,j,inputs.get(i).get(j)));
+				if(next !=null)
+					next = next.add(new Node(strs[j],new Coord(j,i)));
+				else
+					next = grid.add(new Node(strs[j],new Coord(j,i)));
 			}
 		}
-		pathFinder = new Pathfinder(tiles);
-		
-		Array<Tile> teleports = new Array<>();
-		for(Array<Tile> a:tiles)
-		{
-			for(Tile t:a)
-			{
-				if(t.getTeleportNum() != -1)
-				{
-					boolean found = false;
-					for(Iterator<Tile> iter =teleports.iterator();iter.hasNext();)
-					{
-						Tile i = iter.next();
-						if(i.getTeleportNum() == t.getTeleportNum())
-						{
-							i.connect(t);
-							t.connect(i);
-							iter.remove();
-							found = true;
-						}
-					}
-					if(!found)
-						teleports.add(t);
-				}
-			}
-		}
+		grid.connectTeleporters();
+		drawer = new NodeDrawer(50,batch);
+
+		pathfinder = new Pathfinder(grid);
 	}
 
 	@Override
@@ -120,13 +87,7 @@ public class Homework2 extends ApplicationAdapter
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		if(Gdx.input.isKeyJustPressed(Input.Keys.X))
 		{
-			for(Array<Tile> a:tiles)
-			{
-				for(Tile t:a)
-				{
-					t.deselect();
-				}
-			}
+			grid.forEach(Node::deselect);
 			start = null;
 			end = null;
 			path = null;
@@ -135,11 +96,15 @@ public class Homework2 extends ApplicationAdapter
 		if(Gdx.input.justTouched())
 		{
 			Vector3 unprojected = camera.unproject(new Vector3(Gdx.input.getX(),Gdx.input.getY(),0));
-			int x = (int) (unprojected.y/Tile.width);
-			int y = (int) (unprojected.x/Tile.width);
+			int x = (int) (unprojected.y/drawer.side());
+			int y = (int) (unprojected.x/drawer.side());
 			
 			System.out.println("X: "+x+" Y: "+y);
-			
+			Node touched = grid.getNode(x,y);
+			if(touched != null)
+			{
+				//TODO select node
+			}
 			if(tiles.size>x && tiles.get(x).size > y)
 			{
 				Tile t = tiles.get(x).get(y);
