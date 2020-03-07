@@ -1,7 +1,8 @@
 package com.mygdx.game;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
+import com.badlogic.gdx.utils.Array;
+
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -95,15 +96,20 @@ public class Node
 	{
 		return tele;
 	}
-	public ArrayList<Node> getNeighbors()
+	public Array<Node> getNeighbors()
 	{
-		ArrayList<Node> out = new ArrayList<>();
+		Array<Node> out = new Array<>();
 		out.add(up);
 		out.add(right);
 		out.add(down);
 		out.add(left);
 		out.add(tele);
-		out.removeIf(Objects::isNull);
+		for(Iterator<Node> iter = out.iterator();iter.hasNext();)
+		{
+			Node next = iter.next();
+			if(next == null)
+				iter.remove();
+		}
 		return out;
 	}
 	public Node add(Node n)
@@ -171,11 +177,11 @@ public class Node
 		else
 			return this;
 	}
-	public void connectTeleporters(ArrayList<Node> teles)
+	public void connectTeleporters(Array<Node> teles)
 	{
-		connectTeleporters(new ArrayList<>(),teles);
+		connectTeleporters(new Array<>(),teles);
 	}
-	public void connectTeleporters(ArrayList<Node> found,ArrayList<Node> teles)
+	public void connectTeleporters(Array<Node> found,Array<Node> teles)
 	{
 		Node current=this;
 		for(int i=0;i<getWidth();i++)
@@ -188,8 +194,11 @@ public class Node
 					Node a = null;
 					for(Node n : found)
 					{
-						if(n.teleNum == teleNum)
-							a= n;
+						if(n.teleNum == current.teleNum)
+						{
+							a = n;
+							break;
+						}
 					}
 					if(a!=null)
 					{

@@ -18,7 +18,7 @@ public class Pathfinder
 		grid = g;
 		this.dijkstra =dijkstra;
 	}
-	public int heuristic(Node a,Node b,Node tele1,Node tele2) //TODO find better heuristic
+	public int heuristic(Node a,Node b,Node tele1,Node tele2)
 	{
 		return heuristic(a.getCoord(),b.getCoord(),tele1.getCoord(),tele2.getCoord());
 	}
@@ -54,7 +54,7 @@ public class Pathfinder
 	}
 	public Array<Coord> find(Node start, Node goal, HashMap<Node,Node> cameFrom, HashMap<Node,Integer> costSoFar)
 	{
-		boolean hasTeles = grid.getTeleporters().isEmpty();
+		boolean hasTeles = !grid.getTeleporters().isEmpty();
 		Node startTele = null;
 		Node endTele = null;
 		if(hasTeles)
@@ -67,7 +67,7 @@ public class Pathfinder
 			{
 				int cost = manhattanDistance(start, n);
 				int cost2 = manhattanDistance(n, goal);
-				if (start == null || cost < cls)
+				if (startTele == null || cost < cls)
 				{
 					startTele = n;
 					cls = cost;
@@ -100,6 +100,23 @@ public class Pathfinder
 						costSoFar.put(next,newCost);
 					else
 						costSoFar.replace(next,newCost);
+					if(hasTeles)
+					{
+						int closest;
+						if(startTele !=null)
+							closest = manhattanDistance(next,startTele);
+						else
+							closest  = -1;
+						for (Node n : grid.getTeleporters())
+						{
+							int cost = manhattanDistance(next, n);
+							if (startTele == null || cost <closest)
+							{
+								startTele = n;
+								closest = cost;
+							}
+						}
+					}
 					
 					Integer priority;
 					if(hasTeles)

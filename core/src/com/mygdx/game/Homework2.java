@@ -35,10 +35,12 @@ public class Homework2 extends ApplicationAdapter
 	Pathfinder pathfinder;
 	Array<Coord> path = new Array<>();
 	NodeDrawer drawer;
+	boolean pathMade;
 	
 	@Override
 	public void create()
 	{
+		pathMade = false;
 		start =null;
 		end = null;
 		batch = new SpriteBatch();
@@ -86,65 +88,57 @@ public class Homework2 extends ApplicationAdapter
 			start = null;
 			end = null;
 			path = null;
+			pathMade = false;
 		}
 		
 		if(Gdx.input.justTouched())
 		{
-			Vector3 unprojected = camera.unproject(new Vector3(Gdx.input.getX(),Gdx.input.getY(),0));
-			int x = (int) (unprojected.y/drawer.side());
-			int y = (int) (unprojected.x/drawer.side());
-			
-			System.out.println("X: "+x+" Y: "+y);
-			Node touched = grid.getNode(x,y);
-			if(touched != null)
+			if(!pathMade)
 			{
-				//TODO select node
-				if(touched.isSelected())
+				Vector3 unprojected = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+				int x = (int) (unprojected.x / drawer.side());
+				int y = (int) (unprojected.y / drawer.side());
+				
+				System.out.println("X: " + x + " Y: " + y);
+				Node touched = grid.getNode(x, y);
+				if (touched != null)
 				{
-					touched.deselect();
-					if(touched == end)
-						end = null;
-					else if(touched == start)
-						start = null;
-				}
-				else if(start == null)
-				{
-					touched.select();
-					start = touched;
-				}
-				else if(end == null)
-				{
-					touched.select();
-					end = touched;
+					//TODO select node
+					if (touched.isSelected())
+					{
+						touched.deselect();
+						if (touched == end)
+							end = null;
+						else if (touched == start)
+							start = null;
+					}
+					else if (start == null)
+					{
+						touched.select();
+						start = touched;
+					}
+					else if (end == null)
+					{
+						touched.select();
+						end = touched;
+					}
 				}
 			}
 		}
 		
-		if(start!= null && end !=null)
+		if(start!= null && end !=null && !pathMade)
 		{
 			path = pathfinder.find(start,end);
+			path.insert(0,start.getCoord());
 			//TODO make it work with teleporters
 			
-			
-//			for(Coord c:flipped)
-//			{
-//				path.add(new Coord(c.y,c.x));
-//			}
-			
 			System.out.println(path);
-			start.deselect();
-			end.deselect();
-			start = null;
-			end = null;
+			pathMade = true;
 		}
 
 		batch.setProjectionMatrix(camera.combined);
 		
-		if(path !=null)
-		{
-			//TODO DRAW PATH
-		}
-		drawer.drawGrid(grid);
+		drawer.drawGrid(grid,path);
 		inputProcessor.moveCamera();
 		camera.update();
 	}

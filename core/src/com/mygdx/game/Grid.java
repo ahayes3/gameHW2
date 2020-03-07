@@ -1,12 +1,12 @@
 package com.mygdx.game;
 
-import java.util.ArrayList;
+import com.badlogic.gdx.utils.Array;
 import java.util.function.Consumer;
 
 public class Grid
 {
 	private Node head;
-	private ArrayList<Node> teles;
+	private Array<Node> teles;
 	public Grid()
 	{
 		head = null;
@@ -46,10 +46,10 @@ public class Grid
 	}
 	public void connectTeleporters()
 	{
-		teles = new ArrayList<>();
+		teles = new Array<Node>();
 		head.connectTeleporters(teles);
 	}
-	public ArrayList<Node> getTeleporters()
+	public Array<Node> getTeleporters()
 	{
 		return teles;
 	}
