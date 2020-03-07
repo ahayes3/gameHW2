@@ -18,11 +18,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.Scanner;
-
-/*
-NOTES
-TRY A* but with multiple outputs where 1 is direct to the goal and the others are routed to each teleport unless it is already longer to the teleport than goal
- */
 /*
 Instructions:
 wasd to pan camera
@@ -38,7 +33,7 @@ public class Homework2 extends ApplicationAdapter
 	SpriteBatch batch;
 	Node start,end;
 	Pathfinder pathfinder;
-	Array<Node> path = new Array<>();
+	Array<Coord> path = new Array<>();
 	NodeDrawer drawer;
 	
 	@Override
@@ -55,7 +50,7 @@ public class Homework2 extends ApplicationAdapter
 		Scanner scanner = null;
 		
 		scanner = new Scanner(Gdx.files.internal("input.txt").reader());
-		
+		grid = new Grid();
 		Array<String> lines = new Array<>();
 		while(scanner.hasNext())
 		{
@@ -104,43 +99,30 @@ public class Homework2 extends ApplicationAdapter
 			if(touched != null)
 			{
 				//TODO select node
-			}
-			if(tiles.size>x && tiles.get(x).size > y)
-			{
-				Tile t = tiles.get(x).get(y);
-				System.out.println("Weight: "+t.getWeight());
-				if(t.isSelected())
+				if(touched.isSelected())
 				{
-					t.deselect();
-					if(start != null && start.equals(t.getCoords()))
+					touched.deselect();
+					if(touched == end)
+						end = null;
+					else if(touched == start)
 						start = null;
-					if(end != null && end.equals(t.getCoords()))
-						end =null;
 				}
 				else if(start == null)
-					{
-						for(int i = 0;i<tiles.size;i++)
-						{
-							if(tiles.get(i).indexOf(t,true)!=-1)
-								start = new Coord(i,tiles.get(i).indexOf(t,true));
-						}
-						t.select();
-					}
+				{
+					touched.select();
+					start = touched;
+				}
 				else if(end == null)
-					{
-						for(int i = 0;i<tiles.size;i++)
-						{
-							if(tiles.get(i).indexOf(t,true)!=-1)
-								end = new Coord(i,tiles.get(i).indexOf(t,true));
-						}
-						t.select();
-					}
+				{
+					touched.select();
+					end = touched;
+				}
 			}
 		}
 		
 		if(start!= null && end !=null)
 		{
-			Pair<Array<Coord>,Integer> out = pathFinder.find(start,end);
+			path = pathfinder.find(start,end);
 			//TODO make it work with teleporters
 			
 			
@@ -150,8 +132,8 @@ public class Homework2 extends ApplicationAdapter
 //			}
 			
 			System.out.println(path);
-			tiles.get(start.x).get(start.y).deselect();
-			tiles.get(end.x).get(end.y).deselect();
+			start.deselect();
+			end.deselect();
 			start = null;
 			end = null;
 		}
@@ -162,13 +144,7 @@ public class Homework2 extends ApplicationAdapter
 		{
 			//TODO DRAW PATH
 		}
-		for(Array<Tile> a:tiles)
-		{
-			for(Tile t:a)
-			{
-				t.draw(batch);
-			}
-		}
+		drawer.drawGrid(grid);
 		inputProcessor.moveCamera();
 		camera.update();
 	}
@@ -177,6 +153,7 @@ public class Homework2 extends ApplicationAdapter
 	public void dispose()
 	{
 		batch.dispose();
-		Tile.texture.dispose();
+		NodeDrawer.texture.dispose();
+		NodeDrawer.font.dispose();
 	}
 }

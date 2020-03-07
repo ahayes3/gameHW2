@@ -1,7 +1,7 @@
 package com.mygdx.game;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import com.badlogic.gdx.utils.Array;
 import java.util.PriorityQueue;
 
 public class Pathfinder
@@ -48,11 +48,11 @@ public class Pathfinder
 	{
 		return Math.abs(a.x - b.x) + Math.abs(a.y-b.y);
 	}
-	public ArrayList<Coord> find(Node start,Node goal)
+	public Array<Coord> find(Node start,Node goal)
 	{
 		return find(start,goal,new HashMap<>(),new HashMap<>());
 	}
-	public ArrayList<Coord> find(Node start, Node goal, HashMap<Node,Node> cameFrom, HashMap<Node,Integer> costSoFar)
+	public Array<Coord> find(Node start, Node goal, HashMap<Node,Node> cameFrom, HashMap<Node,Integer> costSoFar)
 	{
 		boolean hasTeles = grid.getTeleporters().isEmpty();
 		Node startTele = null;
@@ -114,13 +114,13 @@ public class Pathfinder
 				}
 			}
 		}
-		ArrayList<Node> reversed = new ArrayList<>();
+		Array<Node> reversed = new Array<>();
 		for(Node n = goal;!n.equals(start);n = cameFrom.get(n))
 		{
 			reversed.add(n);
 		}
-		ArrayList<Coord> out = new ArrayList<>();
-		reversed.forEach(p -> out.add(0,p.getCoord()));
+		Array<Coord> out = new Array<>();
+		reversed.forEach(p -> out.insert(0,p.getCoord()));
 		return out;
 	}
 	public int findCost(Node start,Node goal)
