@@ -29,7 +29,7 @@ public class Node
 			weight = 0;
 			teleNum = Integer.parseInt(s.substring(1));
 		}
-		else if (s.charAt(0) == 102)
+		else if (s.charAt(0) == 102 || s.charAt(0) == 70)
 		{
 			weight = -1;
 			tele = null;
@@ -107,7 +107,7 @@ public class Node
 		for(Iterator<Node> iter = out.iterator();iter.hasNext();)
 		{
 			Node next = iter.next();
-			if(next == null)
+			if(next == null || next.getWeight() == -1)
 				iter.remove();
 		}
 		return out;

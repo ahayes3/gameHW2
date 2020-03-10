@@ -42,6 +42,8 @@ public class NodeDrawer
 		batch.draw(texture,x,y,side,side);
 		if(n.getTele()!=null)
 			font.draw(batch,"t"+n.getTeleNum(),x+3,y+(side/2),side - 6, Align.center,false);
+		else if(n.getWeight() == -1)
+			font.draw(batch,"F",x+3,y+(side/2),side - 6, Align.center,false);
 		else
 			font.draw(batch,String.valueOf(n.getWeight()),x+3,y+(side/2)-font.getXHeight()/2,side - 6, Align.center,false);
 		batch.end();

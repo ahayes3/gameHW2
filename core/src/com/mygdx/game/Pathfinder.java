@@ -132,6 +132,8 @@ public class Pathfinder
 			}
 		}
 		Array<Node> reversed = new Array<>();
+		if(cameFrom.get(goal)==null)
+			return new Array<>();
 		for(Node n = goal;!n.equals(start);n = cameFrom.get(n))
 		{
 			reversed.add(n);

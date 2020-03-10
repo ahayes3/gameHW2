@@ -51,7 +51,7 @@ public class Homework2 extends ApplicationAdapter
 		
 		Scanner scanner = null;
 		
-		scanner = new Scanner(Gdx.files.internal("input.txt").reader());
+		scanner = new Scanner(Gdx.files.internal("input2.txt").reader());
 		grid = new Grid();
 		Array<String> lines = new Array<>();
 		while(scanner.hasNext())
@@ -87,7 +87,7 @@ public class Homework2 extends ApplicationAdapter
 			grid.forEach(Node::deselect);
 			start = null;
 			end = null;
-			path = null;
+			path.clear();
 			pathMade = false;
 		}
 		
@@ -101,7 +101,7 @@ public class Homework2 extends ApplicationAdapter
 				
 				System.out.println("X: " + x + " Y: " + y);
 				Node touched = grid.getNode(x, y);
-				if (touched != null)
+				if (touched != null && touched.getWeight()!=-1)
 				{
 					//TODO select node
 					if (touched.isSelected())
@@ -129,10 +129,13 @@ public class Homework2 extends ApplicationAdapter
 		if(start!= null && end !=null && !pathMade)
 		{
 			path = pathfinder.find(start,end);
-			path.insert(0,start.getCoord());
+			if(!path.isEmpty())
+				path.insert(0,start.getCoord());
 			//TODO make it work with teleporters
-			
-			System.out.println(path);
+			if(path.isEmpty())
+				System.out.println("No Path");
+			else
+				System.out.println(path);
 			pathMade = true;
 		}
 
