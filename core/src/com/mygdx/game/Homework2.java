@@ -103,7 +103,6 @@ public class Homework2 extends ApplicationAdapter
 				Node touched = grid.getNode(x, y);
 				if (touched != null && touched.getWeight()!=-1)
 				{
-					//TODO select node
 					if (touched.isSelected())
 					{
 						touched.deselect();
@@ -131,7 +130,6 @@ public class Homework2 extends ApplicationAdapter
 			path = pathfinder.find(start,end);
 			if(!path.isEmpty())
 				path.insert(0,start.getCoord());
-			//TODO make it work with teleporters
 			if(path.isEmpty())
 				System.out.println("No Path");
 			else
